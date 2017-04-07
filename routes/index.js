@@ -46,8 +46,6 @@ router.post('/', function(req, res, next) {
 
     console.log(birdData);
 
-    var bird = Bird(birdData);  //Create new Bird from req.body
-
     // If either of the nest attributes provided, add them to birdData
     if (birdData.nestLocation || birdData.nestMaterials) {
         birdData.nest = {
@@ -59,7 +57,15 @@ router.post('/', function(req, res, next) {
     // Remove non-nested data
     delete(birdData.nestLocation);
     delete(birdData.nestMaterials);
+
+    var bird = Bird(birdData);  //Create new Bird from req.body
+    bird.save(function(err){
+      if (err) { return next(err); }
+      return res.redirect('/')
+    });
 });
+
+
 
 router.post('/addDate', function(req, res, next) {
 
@@ -96,6 +102,7 @@ router.post('/addDate', function(req, res, next) {
             }
             return 0;
         });
+
         bird.save(function (err, newbird) {
 
             if (err) {
@@ -118,9 +125,10 @@ router.post('/addDate', function(req, res, next) {
                     return next(err);
                 }
 
+                }
                 console.log(newbird);
                 return res.redirect('/')
-            }
+
         });
     });
 
