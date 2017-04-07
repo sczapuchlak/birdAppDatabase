@@ -27,6 +27,7 @@ router.post('/', function(req, res, next) {
             birdData[field] = req.body[field];
         }
     }
+
     // If either of the nest attributes provided, add them to birdData
     // Reflect the structure of schema
      if (birdData.nestLocation || birdData.nestMaterials) {
@@ -58,35 +59,8 @@ router.post('/', function(req, res, next) {
     // Remove non-nested data
     delete(birdData.nestLocation);
     delete(birdData.nestMaterials);
-
-
-    bird.save(function (err, newbird) {
-
-        if (err) {
-
-            if (err.name == 'ValidationError') {
-
-                //Loop over error messages and add the message to messages array
-                var messages = [];
-                for (var err_name in err.errors) {
-                    messages.push(err.errors[err_name].message);
-                }
-
-                req.flash('error', messages);
-                return res.redirect('/')
-            }
-            if (err.code == 11000) {  //Duplicate key error code
-                req.flash('error', 'A bird with that name already exists');
-                return res.redirect('/');
-                //For other errors we have not anticipated, send to generic error handler
-                return next(err);
-            }
-
-            console.log(newbird);
-            return res.redirect('/')
-        }
-    });
 });
+
 router.post('/addDate', function(req, res, next) {
 
     if (!req.body.dateSeen) {
@@ -122,9 +96,34 @@ router.post('/addDate', function(req, res, next) {
             }
             return 0;
         });
-        bird.save(function(err) {
-        })
+        bird.save(function (err, newbird) {
 
+            if (err) {
+
+                if (err.name == 'ValidationError') {
+
+                    //Loop over error messages and add the message to messages array
+                    var messages = [];
+                    for (var err_name in err.errors) {
+                        messages.push(err.errors[err_name].message);
+                    }
+
+                    req.flash('error', messages);
+                    return res.redirect('/')
+                }
+                if (err.code == 11000) {  //Duplicate key error code
+                    req.flash('error', 'A bird with that name already exists');
+                    return res.redirect('/');
+                    //For other errors we have not anticipated, send to generic error handler
+                    return next(err);
+                }
+
+                console.log(newbird);
+                return res.redirect('/')
+            }
         });
+    });
+
 });
+
 module.exports = router;
